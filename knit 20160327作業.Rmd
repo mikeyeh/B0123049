@@ -1,0 +1,121 @@
+---
+title: "NBA 2014-2015球季 各隊分析"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r echo=TRUE}
+
+#install.packages("SportsAnalytics")
+library(SportsAnalytics)
+NBA1415<-fetch_NBAPlayerStatistics("14-15")
+
+```
+
+## 各隊最辛苦的球員
+
+最辛苦的球員，意思即為出場分鐘數最多之球員!
+
+```{r echo=TRUE}
+
+unique(NBA1415$Team)
+
+FinalOutput<-NULL
+
+for(team in unique(NBA1415$Team)){
+  selectTeam<-subset(NBA1415,Team==team)
+  FinalOutput<-rbind(FinalOutput,selectTeam
+                     [order(selectTeam$TotalMinutesPlayed,decreasing = T)[1],
+                                            c("Name","Team","TotalMinutesPlayed")])
+}
+output<-FinalOutput[order(FinalOutput$TotalMinutesPlayed,decreasing = T),c("Name","Team","TotalMinutesPlayed")]
+
+output
+
+library(knitr)
+
+kable(output,digits=0)
+```
+
+## 各隊得分王
+
+各隊之得分王即為總分數拿最多的人!
+
+```{r echo=TRUE}
+unique(NBA1415$Team)
+
+FinalOutput<-NULL
+
+for(team in unique(NBA1415$Team)){
+  selectTeam<-subset(NBA1415,Team==team)
+  FinalOutput<-rbind(FinalOutput,selectTeam
+                     [order(selectTeam$TotalPoints,decreasing = T)[1],
+                                            c("Name","Team","TotalPoints")])
+}
+output<-FinalOutput[order(FinalOutput$TotalPoints,decreasing = T),c("Name","Team","TotalPoints")]
+
+output
+
+library(knitr)
+
+kable(output,digits=0)
+```
+
+## 各隊最有效率的球員
+
+最有效率的球員為得分除以上場時間，該比值越高則越有效率。
+
+```{r echo=TRUE}
+unique(NBA1415$Team)
+
+FinalOutput<-NULL
+
+NBA1415$efficience<-NBA1415$TotalPoints/NBA1415$TotalMinutesPlayed
+
+
+for(team in unique(NBA1415$Team)){
+  selectTeam<-subset(NBA1415,Team==team)
+  FinalOutput<-rbind(FinalOutput,selectTeam
+                     [order(selectTeam$efficience,decreasing = T)[1],
+                                            c("Name","Team","efficience")])
+}
+output<-FinalOutput[order(FinalOutput$efficience,decreasing = T),c("Name","Team","efficience")]
+
+output
+
+library(knitr)
+
+kable(output,digits=2)
+```
+
+## 各隊三分球出手最準的球員
+
+三分球最準的計算為三分球命中除以三分球出手，該比值最高的為最準的三分球球員。
+
+```{r echo=TRUE}
+
+unique(NBA1415$Team)
+
+FinalOutput<-NULL
+
+NBA1415$accurate<-NBA1415$ThreesMade/NBA1415$ThreesAttempted
+
+for(team in unique(NBA1415$Team)){
+  selectTeam<-subset(NBA1415,Team==team)
+  FinalOutput<-rbind(FinalOutput,selectTeam
+                     [order(selectTeam$accurate,decreasing = T)[1],
+                                            c("Name","Team","accurate")])
+}
+output<-FinalOutput[order(FinalOutput$accurate,decreasing = T),c("Name","Team","accurate")]
+
+output
+
+library(knitr)
+
+kable(output,digits=2)
+
+```
