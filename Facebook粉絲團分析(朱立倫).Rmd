@@ -1,0 +1,138 @@
+---
+title: "Facebook粉絲團分析朱立倫"
+output: github_document
+---
+
+此程式為計算朱立倫於2016/01/01至2016/04/10的PO文數計算以及讚數、留言數、分享數的資料分析統計
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## 讀取朱立倫粉絲團資料
+
+為朱立倫自2016/01/01到做作業當天的PO文數，每隔5天計算一次PO文數，最後再計算出總PO文數。
+
+```{r results='hide',message=FALSE, warning=FALSE}
+if (!require('Rfacebook')){
+    install.packages("Rfacebook")
+    library(Rfacebook)
+}
+```
+
+```{r}
+token<-'EAACEdEose0cBAFNlnBcrEaj2wj5FbxlJ07Fa6vKFDVwSl815EJwiLXycADPtD5nO1hU9nhbN0myyW1AZBJ4RyZCVbOMdXWIZCoIhklYAJjZAZC82mUSSrqbRW10S5Uaz2qqspliIjaZC8o2wBZB3x2iHsYmIACjp9PBxHYcIy5bDwZDZD'
+
+FBData = GET(paste0("https://graph.facebook.com/v2.5/llchu?fields=posts{meesages,likes.summary(true)}&acess_token=",token))
+
+totalPage<-NULL
+lastDate<-Sys.Date()
+DateVectorStr<-as.character(seq(as.Date("2016-01-01"),lastDate,by="5 days"))
+for(i in 1:(length(DateVectorStr)-1)){
+    tempPage<-getPage("cherngs.y", token,
+                      since = DateVectorStr[i],until = DateVectorStr[i+1])
+    totalPage<-rbind(totalPage,tempPage)
+}
+nrow(totalPage)
+```
+
+2016/01/01至2016/04/10共有62篇文章數!
+
+## 每日發文分析
+
+為朱立倫在2016/01/01至2016/04/10之中，每天的PO文數分析，並將PO文數最多的天數做排行。
+
+```{r}
+totalPage$datetime <- as.POSIXct(totalPage$created_time, format = "%Y-%m-%dT%H:%M:%S+0000", tz = "GMT")
+
+
+totalPage$dateTPE <- format(totalPage$datetime, "%Y-%m-%d", tz = "Asia/Taipei") 
+
+totalPage$weekdays <-weekdays(as.Date(totalPage$dateTPE))
+
+postnumber <- totalPage$id
+
+PostCount<-aggregate(postnumber~dateTPE,totalPage,length)
+
+
+library(knitr)
+
+kable(head(PostCount[order(PostCount$postnumber,decreasing = T),]))
+```
+
+
+## 每日讚數
+
+因每日的文章數不一樣多，先選出當日最高讚數的文章，再把每個當日最高讚數的文章下去做排行。
+
+```{r}
+
+
+tablelikes <- NULL
+
+for(i in unique(totalPage$dateTPE)){
+  
+  selectTPE<-subset(totalPage,dateTPE==i)
+  
+  tablelikes <- rbind(tablelikes,selectTPE[order(selectTPE$likes_count , decreasing=T)[1],c("dateTPE","type","likes_count")])
+  
+}
+
+finaloutput <- tablelikes[order(tablelikes$likes_count,decreasing = T),c("dateTPE","type","likes_count")]
+
+kable(head(finaloutput,digits = 0))
+
+
+
+```
+
+
+##  每日留言數
+
+因每日的文章數不一樣多，先選出當日最高留言數的文章，再把每個當日最高留言數的文章下去做排行。
+
+```{r}
+
+tablecomments <- NULL
+
+for(i in unique(totalPage$dateTPE)){
+  
+  selectTPE<-subset(totalPage,dateTPE==i)
+  
+  tablecomments <- rbind(tablecomments,selectTPE[order(selectTPE$comments_count,decreasing=T),c("dateTPE","type","comments_count")])
+  
+}
+
+finaloutputcomments <- tablecomments[order(tablecomments$comments_count,decreasing = T),c("dateTPE","type","comments_count")]
+
+kable(head(finaloutputcomments,digits = 0))
+
+
+```
+
+## 每日分享數
+
+因每日的文章數不一樣多，先選出當日最高分享數的文章，再把每個當日最高分享數的文章下去做排行。
+
+```{r}
+
+tableshares <- NULL
+
+for(i in unique(totalPage$dateTPE)){
+  
+  selectTPE<-subset(totalPage,dateTPE==i)
+  
+  tableshares <- rbind(tableshares,selectTPE[order(selectTPE$shares_count,decreasing=T),c("dateTPE","type","shares_count")])
+  
+}
+
+finaloutputshares <- tableshares[order(tableshares$shares_count,decreasing = T),c("dateTPE","type","shares_count")]
+
+kable(head(finaloutputshares,digits = 0))
+
+
+```
+
+
