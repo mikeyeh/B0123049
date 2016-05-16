@@ -1,0 +1,41 @@
+---
+title: "1928-1969間，小兒麻痺在美國各州的發生率變化"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 資料前處理
+
+
+```{r cars}
+
+polio<-read.csv("POLIO_Incidence.csv",stringsAsFactors = F)
+
+library(reshape2)
+
+polio.m<-melt(polio,id.vars = c('YEAR','WEEK'))
+
+polio.m[polio.m$value=="-",]$value<-NA 
+polio.m$value<-as.numeric(as.character(polio.m$value)) 
+polio.sumYear<- 
+  aggregate(value~YEAR+variable,data=polio.m,FUN=sum,na.rm=F) 
+head(polio.sumYear)
+
+```
+
+## 視覺畫呈現
+
+我們利用方塊圖的顏色深淺呈現三維座標的圖形。
+
+```{r pressure, echo=FALSE}
+library(ggplot2)
+ggplot(polio.sumYear, aes(YEAR,variable)) + #aes(x,y)
+  geom_tile(aes(fill = value),colour = "white")+ #geom_tile: 區塊著色
+  scale_fill_gradient(low = "white",high = "steelblue") #數值低：白色
+
+```
+
+圖中，縱軸為各城市的名字，橫軸為年分，圖中格子顏色越深(藍色)代表該年度該城市的小兒麻痺發生率為較高的年份，越淺色(白色)則是較低的小兒麻痺發生率。

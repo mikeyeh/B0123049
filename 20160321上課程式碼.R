@@ -10,10 +10,15 @@ for(i in 1:nrow(NBA1415)){
   }
 }
 
+?subset
+str(NBA1415)
+
 ## 都說了for不好用
 subset(NBA1415,GamesPlayed>70&TotalPoints>1500)[,c("Name","Team","Position")]
 ## 都說了for不好用-2
 NBA1415[NBA1415$GamesPlayed>70&NBA1415$TotalPoints>1500,c("Name","Team","Position")]
+
+
 
 ## 可是....還是有想用的時候啊....
 San<-subset(NBA1415,Team=='SAN')
@@ -39,8 +44,6 @@ for(team in unique(NBA1415$Team)){
                        c("Name","Team","TotalPoints")])
 }
 FinalOutput
-
-
 
 ##apply()
 apply(NBA1415,2,max)
